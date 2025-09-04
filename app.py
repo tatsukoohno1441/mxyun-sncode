@@ -66,28 +66,28 @@ if run_btn:
                 # 运行脚本，并指定输出目录
                 run_make_outbound(str(orders_path), str(inv_path), warehouse, tmpdir)
 
-                # 下载按钮读取 tmpdir 里的所有输出文件
-               # 先收集所有文件内容
-download_files = []
-for store in OUTPUT_STORES:
-    files = list(tmpdir.glob(f"{store}+*.xlsx"))
-    if files:
-        fpath = files[0]
-        with open(fpath, "rb") as f:
-            file_bytes = f.read()
-        download_files.append((store, fpath.name, file_bytes))
-    else:
-        download_files.append((store, None, None))
+                # ↓↓↓ 下面这一整段缩进进来 ↓↓↓
+                # 先收集所有文件内容
+                download_files = []
+                for store in OUTPUT_STORES:
+                    files = list(tmpdir.glob(f"{store}+*.xlsx"))
+                    if files:
+                        fpath = files[0]
+                        with open(fpath, "rb") as f:
+                            file_bytes = f.read()
+                        download_files.append((store, fpath.name, file_bytes))
+                    else:
+                        download_files.append((store, None, None))
 
-# 再统一渲染所有下载按钮
-for store, fname, file_bytes in download_files:
-    if fname and file_bytes:
-        st.download_button(
-            label=f"📥 下载 {fname}",
-            data=file_bytes,
-            file_name=fname,
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            key=f"down_{store}",    # 避免按钮冲突
-        )
-    else:
-        st.markdown(f"<span style='color:red'>【{store}】今日无订单</span>", unsafe_allow_html=True)
+                # 再统一渲染所有下载按钮
+                for store, fname, file_bytes in download_files:
+                    if fname and file_bytes:
+                        st.download_button(
+                            label=f"📥 下载 {fname}",
+                            data=file_bytes,
+                            file_name=fname,
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            key=f"down_{store}",    # 避免按钮冲突
+                        )
+                    else:
+                        st.markdown(f"<span style='color:red'>【{store}】今日无订单</span>", unsafe_allow_html=True)
