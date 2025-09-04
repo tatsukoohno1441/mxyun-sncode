@@ -187,7 +187,6 @@ def write_xlsx(store, rows, flag):
 outdir = sys.argv[4] if len(sys.argv) > 4 else "."
 wb.save(os.path.join(outdir, fname))
 print("Wrote:", fname)
-    print("Wrote:", fname)
 
 # ---------- main ----------
 
