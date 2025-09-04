@@ -78,7 +78,7 @@ if run_btn:
                     files = list(tmpdir.glob(f"{store}+*.xlsx"))
                     if files:
                         fpath = files[0]
-                       with open(fpath, "rb") as f:
+                        with open(fpath, "rb") as f:
                             file_bytes = f.read()
                         download_files.append((store, fpath.name, file_bytes))
                         # 统计数据行数
