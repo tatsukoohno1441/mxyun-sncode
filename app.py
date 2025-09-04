@@ -5,7 +5,6 @@ import sys
 import subprocess
 from pathlib import Path
 
-# ----------- App Metadata -----------
 st.set_page_config(page_title="梦想云选码工具", page_icon="📦")
 st.title("梦想云选码工具")
 
@@ -17,15 +16,13 @@ st.markdown(
    * 将空白 **JANコード** 补齐；
    * 删除 JAN 后面的 `-` 及其后内容；
    * 若有运费，请把运费加到单价列；
-   * 完成后以 **UTF‑8** 编码保存。
+   * 完成后以 **UTF-8** 编码保存。
     """
 )
 
-# ----------- Sidebar Inputs -----------
 warehouse = st.sidebar.selectbox("选择仓库", ("通販倉庫", "なんば倉庫"))
 orders_file = st.sidebar.file_uploader("上传当日発送 CSV", type=["csv"])
 inv_file    = st.sidebar.file_uploader("上传库存余额表 XLSX", type=["xlsx", "xls"])
-
 run_btn = st.sidebar.button("🚀 生成出库单")
 
 OUTPUT_STORES = [
@@ -38,14 +35,14 @@ OUTPUT_STORES = [
 ]
 
 # ----------- Processing Logic -----------
-
-def run_make_outbound(orders_path: str, inv_path: str, warehouse: str, workdir: Path):
-    """调用 make_outbound.py 生成出库单文件"""
-    script = workdir / "make_outbound.py"
+def run_make_outbound(orders_path: str, inv_path: str, warehouse: str, outdir: Path):
+    """调用 make_outbound.py 生成出库单文件（输出定向到 outdir）"""
+    script = Path(__file__).parent / "make_outbound.py"
     if not script.exists():
-        st.error("未找到 make_outbound.py， 请将脚本与 app.py 放在同一目录。")
+        st.error("未找到 make_outbound.py，请将脚本与 app.py 放在同一目录。")
         return
-    cmd = [sys.executable, str(script), orders_path, inv_path, warehouse]
+    # 新增 outdir 传参
+    cmd = [sys.executable, str(script), orders_path, inv_path, warehouse, str(outdir)]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         st.error(f"脚本执行失败:\n{result.stderr}")
@@ -58,24 +55,22 @@ if run_btn:
         st.warning("请先上传当日発送 CSV 和 库存余额表！")
     else:
         with st.spinner("正在处理，请稍候 …"):
-            # 把上传文件保存到临时目录
+            # 临时目录
             with tempfile.TemporaryDirectory() as tmpdir:
                 tmpdir = Path(tmpdir)
                 orders_path = tmpdir / orders_file.name
                 inv_path    = tmpdir / inv_file.name
-                # 保存文件
                 orders_path.write_bytes(orders_file.getvalue())
                 inv_path.write_bytes(inv_file.getvalue())
 
-                # 运行脚本
-                run_make_outbound(str(orders_path), str(inv_path), warehouse, Path(__file__).parent)
+                # 运行脚本，并指定输出目录
+                run_make_outbound(str(orders_path), str(inv_path), warehouse, tmpdir)
 
-                # 收集输出文件并展示下载按钮
+                # 下载按钮读取 tmpdir 里的所有输出文件
                 for store in OUTPUT_STORES:
-                    # 文件命名: 店铺名+行数.xlsx (未知行数，用 startswith 匹配)
-                    matches = list(Path(__file__).parent.glob(f"{store}+.*.xlsx"))
-                    if matches:
-                        fpath = matches[0]
+                    files = list(tmpdir.glob(f"{store}+*.xlsx"))
+                    if files:
+                        fpath = files[0]
                         with open(fpath, "rb") as f:
                             st.download_button(
                                 label=f"📥 下载 {fpath.name}",

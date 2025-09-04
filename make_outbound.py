@@ -183,7 +183,10 @@ def write_xlsx(store, rows, flag):
     if flag["err"]:   ws.append([]); ws.append(["当前表格中有未找到的JANコード"])
     if flag["short"]: ws.append(["SN码不足"])
 
-    wb.save(fname)
+    import sys, os
+outdir = sys.argv[4] if len(sys.argv) > 4 else "."
+wb.save(os.path.join(outdir, fname))
+print("Wrote:", fname)
     print("Wrote:", fname)
 
 # ---------- main ----------
