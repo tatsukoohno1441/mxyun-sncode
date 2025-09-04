@@ -168,25 +168,35 @@ def build_output(orders, inv, wh):
 
 def write_xlsx(store, rows, flag):
     fname = f"{store}+{len(rows)+1}.xlsx"
-    wb = Workbook(); ws = wb.active; ws.title = "出库"
+    import sys, os
+    outdir = sys.argv[4] if len(sys.argv) > 4 else "."
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "出库"
     ws.append(HEADER)
-    for c in ws[1]: c.font = Font(bold=True)
+    for c in ws[1]:
+        c.font = Font(bold=True)
 
     for row in rows:
-        err = row.pop(); short = row.pop()
+        err = row.pop()
+        short = row.pop()
         ws.append(row)
         if err:
-            for c in ws[ws.max_row]: c.fill = ERROR_FILL
+            for c in ws[ws.max_row]:
+                c.fill = ERROR_FILL
         elif short:
-            for c in ws[ws.max_row]: c.fill = SHORT_FILL
+            for c in ws[ws.max_row]:
+                c.fill = SHORT_FILL
 
-    if flag["err"]:   ws.append([]); ws.append(["当前表格中有未找到的JANコード"])
-    if flag["short"]: ws.append(["SN码不足"])
+    if flag["err"]:
+        ws.append([])
+        ws.append(["当前表格中有未找到的JANコード"])
+    if flag["short"]:
+        ws.append(["SN码不足"])
 
-    import sys, os
-outdir = sys.argv[4] if len(sys.argv) > 4 else "."
-wb.save(os.path.join(outdir, fname))
-print("Wrote:", fname)
+    wb.save(os.path.join(outdir, fname))
+    print("Wrote:", fname)
+
 
 # ---------- main ----------
 
