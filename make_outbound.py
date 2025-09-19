@@ -30,6 +30,7 @@ STORE_LIST = [
     "販売一丁目（楽天）",
     "ニューライフ",
     "販売一丁目 Wowma店",
+    "販売一丁目【本店】",
 ]
 HEADER = ["存货编码", "仓库", "数量", "单价", "SN码", "备注"]
 ERROR_FILL = PatternFill("solid", fgColor="CCE5FF")  # 蓝
