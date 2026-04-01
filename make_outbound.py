@@ -67,7 +67,12 @@ def read_orders(path):
     df.columns = [c.strip() for c in df.columns]
     for col in ("数量", "単価"):
         if col in df.columns:
-            df[col] = df[col].astype(str).str.replace(r"[ \u3000]", "", regex=True).replace("", "0")
+            # 方案：直接匹配字符，而不是使用容易产生歧义的转义符
+            # 同时将两个 replace 合并为一个逻辑，或者保持分步
+            df[col] = df[col].astype(str).str.replace(u"[ \u3000]", "", regex=True)
+            # 针对空字符串的情况，先处理空格再判断
+            df[col] = df[col].replace("", "0")
+            
     df["数量"] = pd.to_numeric(df["数量"], errors="coerce").fillna(0).astype(int)
     df["単価"] = pd.to_numeric(df["単価"], errors="coerce").fillna(0)
     return df
